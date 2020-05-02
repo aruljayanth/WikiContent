@@ -1,13 +1,16 @@
 import urllib
 from bs4 import BeautifulSoup
-from flask import Flask, request, render_template, Response
+from flask import *
 import requests
 
 app = Flask(__name__)
+app.secret_key = "abc"
+nam = ''
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    session['response'] = 'ERROR 404 SITE ' + nam + ' NOT FOUND'
     return render_template("main.html")
 
 
@@ -35,7 +38,17 @@ def good():
                 l.append(z.text)
             return Response(l, status=200, mimetype='text/plain')
         except:
-            return (render_template("result_data.html"))
+            if 'response' in session:
+                s = session['response'];
+                resp = make_response(render_template('result_data.html', name=s))
+                resp.set_cookie('lasted', ab)
+                return resp
+
+
+@app.route('/lastvisited', methods=['GET', 'POST'])
+def lastvis():
+    name = str(request.cookies.get('lasted'))
+    return '<h1>Last Visited Site:- <br> ' + name + '</h1>'
 
 
 if __name__ == "__main__":
